@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>read</title>
+    <style>
+      * {
+        overflow: hidden;
+      }
+      :root {
+        --font-color: #fff;
+        --font-size: 20px;
+        --background: #000;
+      }
+      .hidden {
+        visibility: hidden;
+      }
+      body {
+        margin: 0;
+        height: 100vh;
+        -webkit-app-region: drag;
+        font-size: var(--font-size);
+      }
+      .text-content {
+        background-color: aqua;
+        color: var(--font-color, #fff);
+        height: 100%;
+      }
+      .percent {
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        -webkit-app-region: no-drag;
+        font-size: var(--font-size);
+        color: var(--font-color);
+      }
+      .percent input {
+        appearance: none;
+        background: transparent;
+        outline: none;
+        width: 2.5em;
+        border: none;
+        font-size: var(--font-size);
+        color: var(--font-color);
+      }
+      .percent input::-webkit-inner-spin-button {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="text-content hidden"></div>
+    <div class="percent"><input type="number" value="0" max="100" min="0" />%</div>
+    <script>
+      const $textContent = document.querySelector(".text-content");
+      const $percent = document.querySelector(".percent");
+      $percent.addEventListener("mouseenter", () => {
+        $textContent.classList.remove("hidden");
+      });
+      $percent.addEventListener("mouseleave", () => {
+        $textContent.classList.add("hidden");
+      });
+      
+    </script>
+  </body>
+</html>
