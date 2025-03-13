@@ -1,10 +1,11 @@
 exports.default = {
   theme: {
     colors: {
-      main: "#F0EFE2",
-      content: "#0F0F0F",
-      title: "#5D6146",
-    },
+      // main: 'var(--bg-main)',
+      content: 'var(--color-content)',
+      title: 'var(--color-title-600)',
+      'title-active': 'var(--color-title-500)'  
+    }
   },
-  plugins: [],
+  plugins: []
 };

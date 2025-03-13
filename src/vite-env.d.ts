@@ -6,6 +6,11 @@ interface Window {
         readFile: (path:string) => string,
         writeTextFile: (content: string) => void,
         writeImageFile: (base64Url: string) => void,
+        getChapters(content: string):  {
+            title: string;
+            start: number;
+            end: number;
+        }[]
     };
 }
 

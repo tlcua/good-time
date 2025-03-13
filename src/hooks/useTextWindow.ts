@@ -1,4 +1,4 @@
-const StateStoreId = 'lz-readingBook';
+const StateStoreId = 'lz-reader';
 
 export interface ReadingBookState {
     id: null;
@@ -8,13 +8,11 @@ export interface ReadingBookState {
     y: number;
 }
 
-export function useTextWindow() {
 
+
+
+function textWindow() {
     let textWindow: BrowserWindow.WindowInstance | null = null;
-
-
-
-
     function createTextWindow(bookId: string) {
         const dbData = window.utools.db.get<{ readingBookState: ReadingBookState }>(StateStoreId);
 
@@ -26,9 +24,6 @@ export function useTextWindow() {
             y: 500,
         }
 
-        console.log('readingBookState:',readingBookState);
-        
-
         window.utools.db.put({
             _id: StateStoreId,
             _rev: dbData?._rev,
@@ -39,8 +34,8 @@ export function useTextWindow() {
         })
 
         destroyTextWindow();
-        window.xxx = textWindow = window.utools.createBrowserWindow('textWindow/index.html', {
-            show: false,
+       window.xxx = textWindow = window.utools.createBrowserWindow('textWindow/index.html', {
+            show: true,
             useContentSize: true,
             skipTaskbar: true,
             alwaysOnTop: true,
@@ -49,13 +44,12 @@ export function useTextWindow() {
             height: readingBookState.h,
             x: readingBookState.x,
             y: readingBookState.y,
-            transparent: true,
-            backgroundColor: '#f00',
+            transparent : true,
+            backgroundColor : '#1f1f1f',
             hasShadow: false,
             webPreferences: {
                 preload: 'textWindow/preload.js',
                 zoomFactor: 1
-
             }
         }, () => {
             callTextWindowUpdate();
@@ -76,11 +70,22 @@ export function useTextWindow() {
         textWindow?.webContents.openDevTools();
 
     }
+    function toggleWindowLocked(lock = true){       
+    textWindow?.setMovable(!lock)
+    }
+
+    function resetWindowPosition(){
+        textWindow?.center();
+        callTextWindowUpdate();
+    }
+
     return {
         createTextWindow,
         destroyTextWindow,
-        callTextWindowUpdate
+        callTextWindowUpdate,
+        toggleWindowLocked,
+        resetWindowPosition
     }
 }
 
-export type TextWinState = ReturnType<typeof useTextWindow>;
+export const WindowState = textWindow();

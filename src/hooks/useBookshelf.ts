@@ -1,50 +1,86 @@
-export interface Book {
-    name: string,
-    uniqueId: string,
-    coverPath?: string,
-    filePath: string,
-    ps: number,
+interface Chapter {
+    title: string;
+    start: number;
+    end: number;
 }
-import {  useMemo, useState } from "react";
+
+export interface LocaleBook {
+    name: string;
+    coverPath?: string;
+    filePath: string;
+    totalSize: number;
+    readingProgress: {
+        chapterIndex: number;
+        chapterPs: number;
+    };
+    chapters: Chapter[];
+}
+
+
+interface LocaleBookAction {
+    type: 'update' | 'delete' | 'add';
+    data: LocaleBook;
+}
+
+import { useEffect } from 'react';
+import { useImmerReducer } from 'use-immer';
 
 const BookshelfDBId = 'lz-bookshelf';
 
+const dbData = window.utools.db.get<{ bookshelf: LocaleBook[] }>(BookshelfDBId);
+
+const bookshelf = dbData?.bookshelf ?? [];
+
+function bookshelfReducer(draft: LocaleBook[], action: LocaleBookAction) {
+    switch (action.type) {
+        case 'add':
+            draft.push(action.data);
+            break;
+        case 'update':
+            Object.assign(draft.find((i) => i.filePath === action.data.filePath)!, action.data);
+            break;
+        case 'delete':
+            draft = draft.filter(d => d.coverPath === action.data.filePath)
+            break;
+    }
+}
+
 export function useBookshelf() {
 
-    const dbData = useMemo(() => {
-        return window.utools.db.get<{ bookshelf: Book[] }>(BookshelfDBId);
-    }, []);
+    const [books, dispatch] = useImmerReducer(bookshelfReducer, bookshelf);
 
-
-    const [books, setBooks] = useState(dbData?.bookshelf ?? []);
-
-    function addBook(book: Book) {        
-        if(books.find(b => b.filePath === book.filePath)) {
-            alert('已有项目路径内容');
-            return;
-        };
-        setBooks([...books, book]);
+    useEffect(() => {
         window.utools.db.put({
             _id: BookshelfDBId,
-            _rev: dbData?._rev,
-            bookshelf: [...books, book]
-        });
+            _rev: window.utools.db.get(BookshelfDBId)?._rev,
+            bookshelf: books
+        })
+    }, [books])
+    
+
+    function addBook(book: LocaleBook) {
+        if (books.find((b) => b.filePath === book.filePath)) {
+            return {
+                msg: '已有该文件！'
+            };
+        }
+        dispatch({
+            type: 'add',
+            data: book
+        })
     }
-    function removeBook(uniqueId: string) {
-        const temp = books.filter(book => book.uniqueId !== uniqueId);
-        setBooks(temp);
-        window.utools.db.put({
-            _id: BookshelfDBId,
-            bookshelf: temp
-        });
+    function removeBook(book: LocaleBook) {
+        dispatch({
+            type: 'delete',
+            data: book,
+        })
     }
-    function getBook(uniqueId: string) {
-        return books.find(book => book.uniqueId === uniqueId);
+    function updateBook(book: LocaleBook) {
+        dispatch({
+            type: 'update',
+            data: book
+        })
     }
 
-    // function updateReadingBook(uniqueId:string){
-    //     utools.dbStorage.setItem('readingBook',uniqueId);
-    // }
-
-    return { books, addBook, removeBook, getBook };
+    return { books, addBook, removeBook, updateBook };
 }
